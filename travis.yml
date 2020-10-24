@@ -1,0 +1,25 @@
+sude: required
+services:
+    - docker
+
+before_install:
+    - docker build -t amyorahman/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run amyorahman/react-test npm test --  --coverage
+
+after_success:
+    - docker build -t amyorahman/multi-client ./client
+    - docker build -t amyorahman/multi-nginx ./nginx
+    - docker build -t amyorahman/multi-server ./server
+    - docker build -t amyorahman/multi-worker ./worker
+
+    #login to docker cli
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER-ID" --password-stdin
+    
+    #take images and push to docker hub
+    - docker push amyorahman/multi-client
+    - docker push amyorahman/multi-nginx
+    - docker push amyorahman/multi-server
+    - docker push amyorahman/multi-worker
+
